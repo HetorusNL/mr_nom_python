@@ -11,12 +11,14 @@ class GameScreen(Screen):
 
         # ingame parameters
         self.init = True
+        self.pause = False
         self.score = 0
 
         # load the assets
         self.ready = load("assets/ready.png").convert_alpha()
         self.buttons = load("assets/buttons.png").convert_alpha()
         self.pausemenu = load("assets/pausemenu.png").convert_alpha()
+        self.numbers = load("assets/numbers.png").convert_alpha()
         # load stains
         self.stains = [
             load("assets/stain1.png").convert_alpha(),
@@ -32,12 +34,19 @@ class GameScreen(Screen):
     def draw(self):
         Screen.draw(self)
 
+        self.draw_score()
+        pygame.draw.line(self.pg_screen, (0, 0, 0), (0, 415), (319, 415))
+
         if self.init:
             self.pg_screen.blit(self.ready, (47, 100))
+            return
 
-        self.draw_score()
-
-        pygame.draw.line(self.pg_screen, (0, 0, 0), (0, 400), (319, 400))
+        if self.pause:
+            self.pg_screen.blit(self.pausemenu, (80, 100))
+        else:
+            self.pg_screen.blit(self.buttons, (0, 0), (64, 128, 64, 64))
+            self.pg_screen.blit(self.buttons, (0, 415), (64, 64, 64, 64))
+            self.pg_screen.blit(self.buttons, (256, 415), (0, 64, 64, 64))
 
         # draw the main menu
         # self.pg_screen.blit(self.logo, (5, 60))
@@ -49,8 +58,13 @@ class GameScreen(Screen):
         # self.pg_screen.blit(self.buttons, (64, 415), (m, 192, 64, 64))
 
     def draw_score(self):
-        for digit in str(self.score):
-            self.pg_screen.blit
+        score_length = len(str(self.score))
+        for i in range(score_length):
+            x_offset = 160 - score_length * 10 + i * 20
+            x_index = 20 * int(str(self.score)[i])
+            self.pg_screen.blit(
+                self.numbers, (x_offset, 420), (x_index, 0, 20, 32)
+            )
 
     def update(self, events):
         Screen.update(self, events)
@@ -59,7 +73,23 @@ class GameScreen(Screen):
         if self.init:
             self.init = False
             return {"play_sound": "click"}
-        return {"screen": "main_menu", "play_sound": "click"}
+
+        if self.pause:
+            if self.pos_between(pos, (83, 100), (232, 142)):
+                self.pause = False
+                return {"play_sound": "click"}
+            elif self.pos_between(pos, (90, 151), (233, 190)):
+                self.init = True
+                self.pause = False
+                return {"screen": "main_menu", "play_sound": "click"}
+        else:  # playing
+            if self.pos_between(pos, (0, 0), (64, 64)):
+                self.pause = True
+                return {"play_sound": "click"}
+            if self.pos_between(pos, (0, 415), (64, 479)):
+                return {"play_sound": "click"}
+            if self.pos_between(pos, (256, 415), (320, 479)):
+                return {"play_sound": "click"}
 
         # if self.pos_between(pos, (69, 258), (240, 287)):
         #    return {"screen": "game_screen", "play_sound": "click"}

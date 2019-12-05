@@ -1,10 +1,10 @@
 import pygame
 import sys
 
-from screens import GameScreen, HelpScreen, MainMenu
+from screens import GameScreen, HelpScreen, HighscoresScreen, MainMenu
 from audio import Audio
 
-pygame.mixer.init(buffer=256)
+pygame.mixer.init(buffer=512)
 pygame.init()
 
 
@@ -20,6 +20,7 @@ class MrNom(object):
         self.screens = {
             "game_screen": GameScreen(pg_screen, screen_size),
             "help_screen": HelpScreen(pg_screen, screen_size),
+            "highscores_screen": HighscoresScreen(pg_screen, screen_size),
             "main_menu": MainMenu(pg_screen, screen_size),
         }
         self.screen = "main_menu"
