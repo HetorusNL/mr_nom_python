@@ -1,6 +1,7 @@
 from .screen import Screen
 from pygame.image import load
 import pygame
+import random
 
 
 class GameScreen(Screen):
@@ -16,8 +17,10 @@ class GameScreen(Screen):
         self.gameover = False
         self.game_time = 0
         self.game_tick = 0.5
+        self.game_tick_decrement = 0.05
         self.direction = 0  # [0,1,2,3] == [up,left,down,right]
         self.snake = [(5, 5), (5, 6), (5, 7)]  # 10 * 13 squares
+        self.stain_pos = self._generate_stain_pos()
 
         # load the assets
         self.ready = load("assets/ready.png").convert_alpha()
@@ -38,6 +41,7 @@ class GameScreen(Screen):
             load("assets/headdown.png").convert_alpha(),
             load("assets/headright.png").convert_alpha(),
         ]
+        self.stain = random.choice(self.stains)
 
     def update(self, delta_time):
         Screen.update(self, delta_time)
@@ -47,11 +51,13 @@ class GameScreen(Screen):
 
         # calculate game loop updates
         self.game_time += delta_time
+        results = {}
 
         while self.game_time >= self.game_tick:
             print("evaluate tick after tick_time:", self.game_tick)
             self.game_time -= self.game_tick
 
+            # move the snake to the new position
             old_head = self.snake[0]
             new_head = (0, 0)
             if self.direction == 0:
@@ -65,12 +71,40 @@ class GameScreen(Screen):
             self.snake = self.snake[:-1]
             self.snake.insert(0, new_head)
 
+            # check for collision
+            for tail in self.snake[1:]:
+                if self.snake[0] == tail:
+                    self.gameover = True
+                    results["play_sound"] = "bitten"
+
+            # check for stain
+            if self.snake[0] == self.stain_pos:
+                # snake add stain, increment score, add new stain, etc
+                results["play_sound"] = "eat"
+                self.score += 10
+                if self.score % 100 == 0:
+                    if self.game_tick > self.game_tick_decrement:
+                        self.game_tick -= self.game_tick_decrement
+                    else:
+                        print("can't go any faster!")
+                self.snake.append(self.snake[-1])
+                if len(self.snake) != 130:
+                    self.stain = random.choice(self.stains)
+                    self.stain_pos = self._generate_stain_pos()
+                else:
+                    self.gameover = True
+
+        return results
+
     def draw(self):
         Screen.draw(self)
 
         self.draw_score()
         pygame.draw.line(self.pg_screen, (0, 0, 0), (0, 415), (319, 415))
         self.draw_snake()
+        self.pg_screen.blit(
+            self.stain, (self.stain_pos[0] * 32, self.stain_pos[1] * 32)
+        )
 
         if self.init:
             self.pg_screen.blit(self.ready, (47, 100))
@@ -157,3 +191,11 @@ class GameScreen(Screen):
 
     def key_press(self, direction):
         self.direction = direction
+
+    def _generate_stain_pos(self):
+        new_stain = (random.randint(0, 9), random.randint(0, 12))
+        for y in range(13):
+            for x in range(10):
+                if (new_stain[0] + x, new_stain[1] + y) not in self.snake:
+                    print((new_stain[0] + x, new_stain[1] + y))
+                    return (new_stain[0] + x, new_stain[1] + y)
