@@ -28,9 +28,6 @@ class MainMenu(Screen):
         m = 64 - self.music_on * 64
         self.pg_screen.blit(self.buttons, (64, 415), (m, 192, 64, 64))
 
-    def update(self, events):
-        Screen.update(self, events)
-
     def mouse_down(self, pos):
         if self.pos_between(pos, (69, 258), (240, 287)):
             return {"screen": "game_screen", "play_sound": "click"}

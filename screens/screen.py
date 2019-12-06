@@ -10,8 +10,14 @@ class Screen(object):
     def draw(self):
         self.pg_screen.blit(self.background, (0, 0))
 
-    def update(self, events):
+    def update(self, delta_time):
         return None
+
+    def mouse_down(self, pos):
+        pass
+
+    def key_press(self, direction):
+        pass
 
     def pos_between(self, pos, top_left, bot_right):
         return (pos[0] >= top_left[0] and pos[0] <= bot_right[0]) and (

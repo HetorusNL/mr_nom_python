@@ -13,7 +13,10 @@ class GameScreen(Screen):
         self.init = True
         self.pause = False
         self.score = 0
-        self.direction = 0  # [0,1,2,3] == [up,right,down,left]
+        self.gameover = False
+        self.game_time = 0
+        self.game_tick = 0.5
+        self.direction = 0  # [0,1,2,3] == [up,left,down,right]
         self.snake = [(5, 5), (5, 6), (5, 7)]  # 10 * 13 squares
 
         # load the assets
@@ -31,10 +34,36 @@ class GameScreen(Screen):
         # load heads
         self.heads = [
             load("assets/headup.png").convert_alpha(),
-            load("assets/headright.png").convert_alpha(),
-            load("assets/headdown.png").convert_alpha(),
             load("assets/headleft.png").convert_alpha(),
+            load("assets/headdown.png").convert_alpha(),
+            load("assets/headright.png").convert_alpha(),
         ]
+
+    def update(self, delta_time):
+        Screen.update(self, delta_time)
+
+        if self.gameover or self.pause or self.init:
+            return
+
+        # calculate game loop updates
+        self.game_time += delta_time
+
+        while self.game_time >= self.game_tick:
+            print("evaluate tick after tick_time:", self.game_tick)
+            self.game_time -= self.game_tick
+
+            old_head = self.snake[0]
+            new_head = (0, 0)
+            if self.direction == 0:
+                new_head = (old_head[0], (old_head[1] - 1) % 13)
+            elif self.direction == 1:
+                new_head = ((old_head[0] - 1) % 10, old_head[1])
+            elif self.direction == 2:
+                new_head = (old_head[0], (old_head[1] + 1) % 13)
+            elif self.direction == 3:
+                new_head = ((old_head[0] + 1) % 10, old_head[1])
+            self.snake = self.snake[:-1]
+            self.snake.insert(0, new_head)
 
     def draw(self):
         Screen.draw(self)
@@ -83,9 +112,6 @@ class GameScreen(Screen):
             (self.snake[0][0] * 32 - 5, self.snake[0][1] * 32 - 5),
         )
 
-    def update(self, events):
-        Screen.update(self, events)
-
     def reset(self):
         self.init = True
         self.pause = False
@@ -110,10 +136,10 @@ class GameScreen(Screen):
                 self.pause = True
                 return {"play_sound": "click"}
             if self.pos_between(pos, (0, 415), (64, 479)):
-                self.direction = (self.direction - 1) % 4
+                self.direction = (self.direction + 1) % 4
                 return {"play_sound": "click"}
             if self.pos_between(pos, (256, 415), (320, 479)):
-                self.direction = (self.direction + 1) % 4
+                self.direction = (self.direction - 1) % 4
                 return {"play_sound": "click"}
 
         # if self.pos_between(pos, (69, 258), (240, 287)):
@@ -128,3 +154,6 @@ class GameScreen(Screen):
         # elif self.pos_between(pos, (64, 415), (128, 479)):
         #    self.music_on = not self.music_on
         #    return {"music": self.music_on, "play_sound": "click"}
+
+    def key_press(self, direction):
+        self.direction = direction

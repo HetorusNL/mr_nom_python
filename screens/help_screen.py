@@ -24,9 +24,6 @@ class HelpScreen(Screen):
         self.pg_screen.blit(self.help_pages[self.help_page_idx], (46, 112))
         self.pg_screen.blit(self.buttons, (256, 415), (0, 64, 64, 128))
 
-    def update(self, events):
-        Screen.update(self, events)
-
     def mouse_down(self, pos):
         self.help_page_idx += 1
         if self.help_page_idx >= 3:
