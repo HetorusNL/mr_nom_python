@@ -14,7 +14,7 @@ class GameScreen(Screen):
         self.init = True
         self.pause = False
         self.score = 0
-        self.gameover = False
+        self.game_over = False
         self.game_time = 0
         self.game_tick = 0.5
         self.game_tick_decrement = 0.05
@@ -24,6 +24,7 @@ class GameScreen(Screen):
 
         # load the assets
         self.ready = load("assets/ready.png").convert_alpha()
+        self.gameover = load("assets/gameover.png").convert_alpha()
         self.buttons = load("assets/buttons.png").convert_alpha()
         self.pausemenu = load("assets/pausemenu.png").convert_alpha()
         self.numbers = load("assets/numbers.png").convert_alpha()
@@ -46,7 +47,7 @@ class GameScreen(Screen):
     def update(self, delta_time):
         Screen.update(self, delta_time)
 
-        if self.gameover or self.pause or self.init:
+        if self.game_over or self.pause or self.init:
             return
 
         # calculate game loop updates
@@ -74,7 +75,7 @@ class GameScreen(Screen):
             # check for collision
             for tail in self.snake[1:]:
                 if self.snake[0] == tail:
-                    self.gameover = True
+                    self.game_over = True
                     results["play_sound"] = "bitten"
 
             # check for stain
@@ -92,7 +93,7 @@ class GameScreen(Screen):
                     self.stain = random.choice(self.stains)
                     self.stain_pos = self._generate_stain_pos()
                 else:
-                    self.gameover = True
+                    self.game_over = True
 
         return results
 
@@ -108,6 +109,11 @@ class GameScreen(Screen):
 
         if self.init:
             self.pg_screen.blit(self.ready, (47, 100))
+            return
+
+        if self.game_over:
+            self.pg_screen.blit(self.gameover, (47, 100))
+            self.pg_screen.blit(self.buttons, (128, 208), (0, 128, 64, 64))
             return
 
         if self.pause:
@@ -149,6 +155,7 @@ class GameScreen(Screen):
     def reset(self):
         self.init = True
         self.pause = False
+        self.game_over = False
         self.direction = 0
         self.snake = [(5, 5), (5, 6), (5, 7)]
         self.score = 0
@@ -157,6 +164,11 @@ class GameScreen(Screen):
         if self.init:
             self.init = False
             return {"play_sound": "click"}
+
+        if self.game_over:
+            if self.pos_between(pos, (128, 208), (192, 272)):
+                self.reset()
+                return {"screen": "main_menu", "play_sound": "click"}
 
         if self.pause:
             if self.pos_between(pos, (83, 100), (232, 142)):
