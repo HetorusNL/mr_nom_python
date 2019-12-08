@@ -190,6 +190,7 @@ class GameScreen(Screen):
         new_stain = (random.randint(0, 9), random.randint(0, 12))
         for y in range(13):
             for x in range(10):
-                if (new_stain[0] + x, new_stain[1] + y) not in self.snake:
-                    print((new_stain[0] + x, new_stain[1] + y))
-                    return (new_stain[0] + x, new_stain[1] + y)
+                _new_stain = ((new_stain[0] + x) % 10, (new_stain[1] + y) % 13)
+                if _new_stain not in self.snake:
+                    print(_new_stain)
+                    return _new_stain
