@@ -1,4 +1,5 @@
 from .screen import Screen
+from utils import Network
 from pygame.image import load
 import pygame
 import random
@@ -9,6 +10,7 @@ class GameScreen(Screen):
         Screen.__init__(self, pg_screen, screen_size)
         self.pg_screen = pg_screen
         self.screen_size = screen_size
+        self.network = Network()
 
         # ingame parameters
         self.init = True

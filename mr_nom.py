@@ -3,7 +3,7 @@ import sys
 import time
 
 from screens import GameScreen, HelpScreen, HighscoresScreen, MainMenu
-from audio import Audio
+from utils import Audio
 
 pygame.mixer.init(buffer=512)
 pygame.init()
