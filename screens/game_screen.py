@@ -152,6 +152,9 @@ class GameScreen(Screen):
         self.direction = 0
         self.snake = [(5, 5), (5, 6), (5, 7)]
         self.score = 0
+        self.game_time = 0
+        self.game_tick = 0.5
+        self.stain_pos = self._generate_stain_pos()
 
     def mouse_down(self, pos):
         if self.init:
