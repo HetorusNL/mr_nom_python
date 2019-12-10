@@ -5,7 +5,11 @@ import time
 from screens import GameScreen, HelpScreen, HighscoresScreen, MainMenu
 from utils import Audio
 
-pygame.mixer.init(buffer=512)
+try:
+    pygame.mixer.init(buffer=512)
+    has_audio = True
+except pygame.error:
+    has_audio = False
 pygame.init()
 
 
@@ -35,7 +39,7 @@ class MrNom(object):
             "main_menu": MainMenu(pg_screen, screen_size),
         }
         self.screen = "main_menu"
-        self.audio = Audio()
+        self.audio = Audio(has_audio)
         self.audio.set_music(self.screens["main_menu"].music_on)
         self.audio.set_sound(self.screens["main_menu"].sound_on)
 
