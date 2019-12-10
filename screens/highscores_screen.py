@@ -10,6 +10,11 @@ class HighscoresScreen(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
+        # temporarily use david's access_token to test personal highscores
+        at = "yhd94t31tf3x21vlft0yynwmi02ax5umggab00stjmlxo5hfr"
+        self.network._cache["access_token"] = at
+        print(self.network._cache["access_token"])
+        # end of temporary test code
         self.font = Font(None, 30)
 
         self.fetch_global_highscores = True
@@ -56,7 +61,7 @@ class HighscoresScreen(Screen):
                 self._draw_failed_highscore_fetch("global")
         elif self.highscore_page_idx == 1:
             if self.network.get_local_highscores().status_code == 200:
-                self._draw_personal_highscorees()
+                self._draw_personal_highscores()
             elif self.network.get_local_highscores().status_code != 0:
                 self._draw_failed_highscore_fetch("personal", "not logged in!")
 
@@ -91,10 +96,30 @@ class HighscoresScreen(Screen):
             self._draw_numbers(highscore["time"] // 1000, (240, 100 + i * 45))
 
         # draw pagination stuff
+        self._draw_pagination(len(highscores), self.global_highscores_page)
+
+    def _draw_personal_highscores(self):
+        # draw the titles of the highscore columns
+        color = (150, 150, 150)
+        self._draw_left_align_text("Score", (10, 70), color)
+        self._draw_left_align_text("Time", (160, 70), color)
+
+        # draw up to 5 of the highscores themselves
+        highscores = self.network.get_local_highscores().data
+        highscores_length = len(highscores) - 5 * self.personal_highscores_page
+        for i in range(5 if highscores_length > 5 else highscores_length):
+            highscore = highscores[i + 5 * self.personal_highscores_page]
+            self._draw_numbers(highscore["score"], (10, 100 + i * 45))
+            self._draw_numbers(highscore["time"] // 1000, (160, 100 + i * 45))
+
+        # draw pagination stuff
+        self._draw_pagination(len(highscores), self.personal_highscores_page)
+
+    def _draw_pagination(self, highscores_length, highscore_page):
         self.pg_screen.blit(self.buttons, (32, 330), (64, 64, 64, 64))
         self.pg_screen.blit(self.buttons, (224, 330), (0, 64, 64, 64))
-        num_pages = len(highscores) // 5 + 1 if len(highscores) > 0 else 0
-        page_string = f"page {self.global_highscores_page+1} / {num_pages}"
+        num_pages = highscores_length // 5 + 1 if highscores_length > 0 else 0
+        page_string = f"page {highscore_page+1} / {num_pages}"
         self._draw_centered_text(page_string, (160, 362))
 
     def _draw_numbers(self, numbers, left_top):
