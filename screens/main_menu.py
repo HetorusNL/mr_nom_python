@@ -35,6 +35,10 @@ class MainMenu(Screen):
             return {"screen": "highscores_screen", "play_sound": "click"}
         elif self.pos_between(pos, (72, 345), (242, 379)):
             return {"screen": "help_screen", "play_sound": "click"}
+        elif self.pos_between(pos, (153, 58), (303, 93)):
+            return {"screen": "login_screen", "play_sound": "click"}
+        elif self.pos_between(pos, (154, 7), (308, 47)):
+            return {"screen": "register_screen", "play_sound": "click"}
         elif self.pos_between(pos, (0, 415), (64, 479)):
             self.sound_on = not self.sound_on
             return {"sound": self.sound_on, "play_sound": "click"}

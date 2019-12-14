@@ -11,6 +11,16 @@ class GameScreen(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
+        self.arrow_keys = {
+            pygame.K_UP: 0,
+            pygame.K_w: 0,
+            pygame.K_LEFT: 1,
+            pygame.K_a: 1,
+            pygame.K_DOWN: 2,
+            pygame.K_s: 2,
+            pygame.K_RIGHT: 3,
+            pygame.K_d: 3,
+        }
 
         # ingame parameters
         self.init = True
@@ -184,12 +194,14 @@ class GameScreen(Screen):
                 self.direction = (self.direction - 1) % 4
                 return {"play_sound": "click"}
 
-    def key_press(self, direction):
+    def key_press(self, event):
         if self.init or self.pause or self.game_over:
             return
 
         # user is playing, handle key press
-        self.direction = direction
+        if event.key in self.arrow_keys.keys():
+            self.screens[self.screen].key_press(self.arrow_keys[event.key])
+            self.direction = self.arrow_keys[event.key]
 
     def _generate_stain_pos(self):
         new_stain = (random.randint(0, 9), random.randint(0, 12))

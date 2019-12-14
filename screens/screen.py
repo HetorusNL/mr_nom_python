@@ -16,7 +16,7 @@ class Screen(object):
     def mouse_down(self, pos):
         pass
 
-    def key_press(self, direction):
+    def key_press(self, event):
         pass
 
     def pos_between(self, pos, top_left, bot_right):
