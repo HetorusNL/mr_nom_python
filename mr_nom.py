@@ -8,6 +8,7 @@ from screens import (
     HighscoresScreen,
     MainMenu,
     LoginScreen,
+    RegisterScreen,
 )
 from utils import Audio
 
@@ -34,8 +35,7 @@ class MrNom(object):
             "highscores_screen": HighscoresScreen(pg_screen, screen_size),
             "main_menu": MainMenu(pg_screen, screen_size),
             "login_screen": LoginScreen(pg_screen, screen_size),
-            # TODO: RegisterScreen
-            "register_screen": LoginScreen(pg_screen, screen_size),
+            "register_screen": RegisterScreen(pg_screen, screen_size),
         }
         self.screen = "main_menu"
         self.audio = Audio(has_audio)
