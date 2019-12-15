@@ -200,7 +200,6 @@ class GameScreen(Screen):
 
         # user is playing, handle key press
         if event.key in self.arrow_keys.keys():
-            self.screens[self.screen].key_press(self.arrow_keys[event.key])
             self.direction = self.arrow_keys[event.key]
 
     def _generate_stain_pos(self):
