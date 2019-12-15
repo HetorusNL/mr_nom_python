@@ -10,11 +10,6 @@ class HighscoresScreen(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
-        # temporarily use david's access_token to test personal highscores
-        at = "yhd94t31tf3x21vlft0yynwmi02ax5umggab00stjmlxo5hfr"
-        self.network._cache["access_token"] = at
-        print(self.network._cache["access_token"])
-        # end of temporary test code
         self.font = Font(None, 30)
 
         self.fetch_global_highscores = True
