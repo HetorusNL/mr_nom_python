@@ -21,6 +21,7 @@ class Network(Borg):
         "global_highscores": Response(),
         "local_highscores": Response(),
         "login": Response(),
+        "register": Response(),
         "access_token": None,
         "username": None,
     }
@@ -68,6 +69,20 @@ class Network(Borg):
 
     def get_local_highscores(self):
         return self._cache["local_highscores"]
+
+    def perform_register(self, username, password, email):
+        # clear response from cache
+        self._cache["register"] = Response()
+
+        # perform the register post request
+        url = self._REGISTER_URL
+        params = {"username": username, "password": password, "email": email}
+        threading.Thread(
+            target=self._requests_post_worker, args=(url, "register", params)
+        ).start()
+
+    def get_register_status(self):
+        return self._cache["register"]
 
     def perform_login(self, username, password):
         # clear response from cache

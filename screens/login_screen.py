@@ -60,6 +60,9 @@ class LoginScreen(Screen):
         self.password_box.draw(self.pg_screen)
         self._draw_centered_text("LOGIN", (160, 310))
 
+        self.pg_screen.blit(self.buttons, (0, 415), (64, 64, 64, 64))
+
+        # draw text last, so it overlaps everything (if overlapping happens)
         if self.logging_in_status:
             if type(self.logging_in_status) == list:
                 offset = 350
@@ -68,8 +71,6 @@ class LoginScreen(Screen):
                     offset += 25
             else:  # string
                 self._draw_centered_text(self.logging_in_status, (160, 350))
-
-        self.pg_screen.blit(self.buttons, (0, 415), (64, 64, 64, 64))
 
     def _draw_centered_text(self, text, center_coord, color=(0, 0, 0)):
         text = self.font.render(text, True, color)
@@ -111,4 +112,4 @@ class LoginScreen(Screen):
         self.username_box.reset()
         self.password_box.reset()
         self.logging_in = False
-        self.logging_in_status = False
+        self.logging_in_status = None
