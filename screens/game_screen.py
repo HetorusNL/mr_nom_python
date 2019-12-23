@@ -1,6 +1,7 @@
 from .screen import Screen
 from utils import Network
 from pygame.image import load
+from pygame.font import Font
 import pygame
 import random
 
@@ -11,6 +12,7 @@ class GameScreen(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
+        self.font = Font(None, 30)
         self.arrow_keys = {
             pygame.K_UP: 0,
             pygame.K_w: 0,
@@ -121,6 +123,12 @@ class GameScreen(Screen):
 
         if self.init:
             self.pg_screen.blit(self.ready, (47, 100))
+            # if user is logged in, display their name
+            username = self.network._cache["username"]
+            line1 = "Logged in as:" if username else "Not logged in!"
+            line2 = username if username else "Highscore won't be submitted"
+            self._draw_centered_text(line1, (160, 50))
+            self._draw_centered_text(line2, (160, 75))
             return
 
         if self.game_over:
@@ -155,16 +163,17 @@ class GameScreen(Screen):
             (self.snake[0][0] * 32 - 5, self.snake[0][1] * 32 - 5),
         )
 
-    def reset(self):
-        self.init = True
-        self.pause = False
-        self.game_over = False
-        self.direction = 0
-        self.snake = [(5, 5), (5, 6), (5, 7)]
-        self.score = 0
-        self.game_time = 0
-        self.game_tick = 0.5
-        self.stain_pos = self._generate_stain_pos()
+    def _draw_centered_text(self, text, center_coord, color=(0, 0, 0)):
+        text = self.font.render(text, True, color)
+        text_rect = text.get_rect()
+        text_rect.center = center_coord
+        self.pg_screen.blit(text, text_rect)
+
+    def _draw_left_align_text(self, text, top_left, color=(0, 0, 0)):
+        text = self.font.render(text, True, color)
+        text_rect = text.get_rect()
+        text_rect.topleft = top_left
+        self.pg_screen.blit(text, text_rect)
 
     def mouse_down(self, pos):
         if self.init:
@@ -210,3 +219,14 @@ class GameScreen(Screen):
                 if _new_stain not in self.snake:
                     print(_new_stain)
                     return _new_stain
+
+    def reset(self):
+        self.init = True
+        self.pause = False
+        self.game_over = False
+        self.direction = 0
+        self.snake = [(5, 5), (5, 6), (5, 7)]
+        self.score = 0
+        self.game_time = 0
+        self.game_tick = 0.5
+        self.stain_pos = self._generate_stain_pos()
