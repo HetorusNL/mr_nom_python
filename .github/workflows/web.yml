@@ -30,7 +30,7 @@ jobs:
       - name: Build web version
         run: |
           pip install pygbag==0.9.3
-          python -m pygbag --build --title "Mr. Nom" .
+          python -m pygbag --build --title "Mr. Nom" --template web_template.tmpl .
 
       # upload build/web as the github pages artifact
       - uses: actions/upload-pages-artifact@v5

@@ -28,6 +28,7 @@ class MrNom(object):
         screen_height = 480
         screen_size = (screen_width, screen_height)
         pg_screen = pygame.display.set_mode((screen_width, screen_height))
+        pygame.display.set_caption("Mr. Nom")
 
         # initialize the screens
         self.screens = {
