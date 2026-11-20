@@ -1,5 +1,5 @@
 import pygame
-from pygame.font import Font
+from pygame import font
 
 
 class InputBox:
@@ -10,7 +10,7 @@ class InputBox:
         self.color = self.color_inactive
         self.text = text
         self.type = type
-        self.font = Font(None, 30)
+        self.font = font.Font(None, 30)
         if self.type == "password":
             self.txt_surface = self.font.render(
                 "*" * len(text), True, self.color

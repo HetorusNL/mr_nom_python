@@ -1,5 +1,5 @@
 from .screen import Screen
-from pygame.image import load
+from pygame import image
 
 
 class HelpScreen(Screen):
@@ -11,11 +11,11 @@ class HelpScreen(Screen):
 
         # load the assets
         self.help_pages = [
-            load("assets/help1.png").convert_alpha(),
-            load("assets/help2.png").convert_alpha(),
-            load("assets/help3.png").convert_alpha(),
+            image.load("assets/help1.png").convert_alpha(),
+            image.load("assets/help2.png").convert_alpha(),
+            image.load("assets/help3.png").convert_alpha(),
         ]
-        self.buttons = load("assets/buttons.png").convert_alpha()
+        self.buttons = image.load("assets/buttons.png").convert_alpha()
 
     def draw(self):
         Screen.draw(self)

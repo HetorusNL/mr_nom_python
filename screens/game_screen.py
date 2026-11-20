@@ -1,7 +1,7 @@
 from .screen import Screen
 from utils import Network
-from pygame.image import load
-from pygame.font import Font
+from pygame import image
+from pygame import font
 import pygame
 import random
 
@@ -12,7 +12,7 @@ class GameScreen(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
-        self.font = Font(None, 30)
+        self.font = font.Font(None, 30)
         self.arrow_keys = {
             pygame.K_UP: 0,
             pygame.K_w: 0,
@@ -37,24 +37,24 @@ class GameScreen(Screen):
         self.stain_pos = self._generate_stain_pos()
 
         # load the assets
-        self.ready = load("assets/ready.png").convert_alpha()
-        self.gameover = load("assets/gameover.png").convert_alpha()
-        self.buttons = load("assets/buttons.png").convert_alpha()
-        self.pausemenu = load("assets/pausemenu.png").convert_alpha()
-        self.numbers = load("assets/numbers.png").convert_alpha()
-        self.tail = load("assets/tail.png").convert_alpha()
+        self.ready = image.load("assets/ready.png").convert_alpha()
+        self.gameover = image.load("assets/gameover.png").convert_alpha()
+        self.buttons = image.load("assets/buttons.png").convert_alpha()
+        self.pausemenu = image.load("assets/pausemenu.png").convert_alpha()
+        self.numbers = image.load("assets/numbers.png").convert_alpha()
+        self.tail = image.load("assets/tail.png").convert_alpha()
         # load stains
         self.stains = [
-            load("assets/stain1.png").convert_alpha(),
-            load("assets/stain2.png").convert_alpha(),
-            load("assets/stain3.png").convert_alpha(),
+            image.load("assets/stain1.png").convert_alpha(),
+            image.load("assets/stain2.png").convert_alpha(),
+            image.load("assets/stain3.png").convert_alpha(),
         ]
         # load heads
         self.heads = [
-            load("assets/headup.png").convert_alpha(),
-            load("assets/headleft.png").convert_alpha(),
-            load("assets/headdown.png").convert_alpha(),
-            load("assets/headright.png").convert_alpha(),
+            image.load("assets/headup.png").convert_alpha(),
+            image.load("assets/headleft.png").convert_alpha(),
+            image.load("assets/headdown.png").convert_alpha(),
+            image.load("assets/headright.png").convert_alpha(),
         ]
         self.stain = random.choice(self.stains)
 

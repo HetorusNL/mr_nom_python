@@ -1,5 +1,4 @@
-from pygame.mixer import music
-from pygame.mixer import Sound
+from pygame import mixer
 
 
 class Audio(object):
@@ -16,10 +15,10 @@ class Audio(object):
             return
 
         if on and not self.music_on:
-            music.play(-1)
+            mixer.music.play(-1)
             self.music_on = True
         elif not on and self.music_on:
-            music.stop()
+            mixer.music.stop()
             self.music_on = False
 
     def set_sound(self, on):
@@ -41,9 +40,9 @@ class Audio(object):
             print(sound, "not found!")
 
     def _load_assets(self):
-        music.load("assets/music.ogg")
+        mixer.music.load("assets/music.ogg")
         self.sounds = {
-            "bitten": Sound("assets/bitten.ogg"),
-            "click": Sound("assets/click.ogg"),
-            "eat": Sound("assets/eat.ogg"),
+            "bitten": mixer.Sound("assets/bitten.ogg"),
+            "click": mixer.Sound("assets/click.ogg"),
+            "eat": mixer.Sound("assets/eat.ogg"),
         }

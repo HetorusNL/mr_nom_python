@@ -1,3 +1,4 @@
+import asyncio
 import pygame
 import sys
 import time
@@ -43,10 +44,14 @@ class MrNom(object):
         self.audio.set_sound(self.screens["main_menu"].sound_on)
 
         self.game_time = time.time()
+        self.clock = pygame.time.Clock()
 
-        # run the game loop forever
+    async def run(self):
+        # run the game loop forever, yielding to the event loop every frame
+        # (required for the browser build, harmless on desktop)
         while True:
             self.game_loop()
+            await asyncio.sleep(0)
 
     def game_loop(self):
         results = {}
@@ -59,7 +64,9 @@ class MrNom(object):
         # process the event loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (
-                event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
+                event.type == pygame.KEYDOWN
+                and event.key == pygame.K_ESCAPE
+                and sys.platform != "emscripten"  # can't quit a web page
             ):
                 print("shutting down...")
                 sys.exit()
@@ -90,9 +97,9 @@ class MrNom(object):
         self.screens[self.screen].draw()
 
         pygame.display.update()
-        pygame.time.delay(30)  # ~30fps
+        self.clock.tick(30)  # ~30fps
 
 
 if __name__ == "__main__":
     # start the main function if this script is executed
-    MrNom()
+    asyncio.run(MrNom().run())

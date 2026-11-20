@@ -1,0 +1,52 @@
+name: Build and deploy web version
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# only allow one concurrent deployment, don't cancel in-progress ones
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout the repo to $GITHUB_WORKSPACE
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # build the game for the browser (WebAssembly) using pygbag
+      - name: Build web version
+        run: |
+          pip install pygbag==0.9.3
+          python -m pygbag --build --title "Mr. Nom" .
+
+      # upload build/web as the github pages artifact
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/web
+
+  deploy:
+    # only deploy the master branch, other branches are only built
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

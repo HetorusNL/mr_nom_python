@@ -1,8 +1,9 @@
 from .screen import Screen
-from pygame.image import load
-from pygame.font import Font
+from pygame import image
+from pygame import font
 from utils import InputBox
 from utils import Network
+from utils.network import UNAVAILABLE
 
 
 class RegisterScreen(Screen):
@@ -11,13 +12,13 @@ class RegisterScreen(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
-        self.font = Font(None, 30)
+        self.font = font.Font(None, 30)
         self.registering = False
         self.registering_status = None
         self.username = None
 
         # load the assets
-        self.buttons = load("assets/buttons.png").convert_alpha()
+        self.buttons = image.load("assets/buttons.png").convert_alpha()
 
         # create the input boxes
         self.username_box = InputBox((10, 90), (300, 40))
@@ -52,6 +53,10 @@ class RegisterScreen(Screen):
                     "Username already exists!",
                     "Try a different username",
                 ]
+                self.registering = False
+            elif status_code == UNAVAILABLE:
+                # backend unreachable (always the case in the browser build)
+                self.registering_status = ["Server unavailable!", "Try again later..."]
                 self.registering = False
             elif status_code != 0:
                 # some unknown error occured

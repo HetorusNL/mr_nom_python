@@ -1,6 +1,6 @@
 from .screen import Screen
-from pygame.image import load
-from pygame.font import Font
+from pygame import image
+from pygame import font
 from utils import Network
 
 
@@ -10,15 +10,15 @@ class MainMenu(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
-        self.font = Font(None, 30)
+        self.font = font.Font(None, 30)
         self.sound_on = True
         self.music_on = True
 
         # load the assets
-        self.logo = load("assets/logo.png").convert_alpha()
-        self.main_menu = load("assets/mainmenu.png").convert_alpha()
-        self.register_login = load("assets/register_login.png").convert_alpha()
-        self.buttons = load("assets/buttons.png").convert_alpha()
+        self.logo = image.load("assets/logo.png").convert_alpha()
+        self.main_menu = image.load("assets/mainmenu.png").convert_alpha()
+        self.register_login = image.load("assets/register_login.png").convert_alpha()
+        self.buttons = image.load("assets/buttons.png").convert_alpha()
 
     def draw(self):
         Screen.draw(self)

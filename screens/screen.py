@@ -1,11 +1,11 @@
-from pygame.image import load
+from pygame import image
 
 
 class Screen(object):
     def __init__(self, pg_screen, screen_size):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
-        self.background = load("assets/background.png").convert()
+        self.background = image.load("assets/background.png").convert()
 
     def draw(self):
         self.pg_screen.blit(self.background, (0, 0))

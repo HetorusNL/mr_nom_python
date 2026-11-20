@@ -1,7 +1,8 @@
 from .screen import Screen
 from utils import Network
-from pygame.image import load
-from pygame.font import Font
+from utils.network import UNAVAILABLE
+from pygame import image
+from pygame import font
 
 
 class HighscoresScreen(Screen):
@@ -10,7 +11,7 @@ class HighscoresScreen(Screen):
         self.pg_screen = pg_screen
         self.screen_size = screen_size
         self.network = Network()
-        self.font = Font(None, 30)
+        self.font = font.Font(None, 30)
 
         self.fetch_global_highscores = True
         self.fetch_personal_highscores = True
@@ -19,9 +20,9 @@ class HighscoresScreen(Screen):
         self.highscore_page_idx = 0
 
         # load the assets
-        self.mainmenu = load("assets/mainmenu.png").convert_alpha()
-        self.numbers = load("assets/numbers.png").convert_alpha()
-        self.buttons = load("assets/buttons.png").convert_alpha()
+        self.mainmenu = image.load("assets/mainmenu.png").convert_alpha()
+        self.numbers = image.load("assets/numbers.png").convert_alpha()
+        self.buttons = image.load("assets/buttons.png").convert_alpha()
 
     def update(self, delta_time):
         if self.highscore_page_idx == 0 and self.fetch_global_highscores:
@@ -53,12 +54,20 @@ class HighscoresScreen(Screen):
             if self.network.get_global_highscores().status_code == 200:
                 self._draw_global_highscores()
             elif self.network.get_global_highscores().status_code != 0:
-                self._draw_failed_highscore_fetch("global")
+                status_code = self.network.get_global_highscores().status_code
+                second = "server unavailable!" if status_code == UNAVAILABLE else None
+                self._draw_failed_highscore_fetch("global", second)
         elif self.highscore_page_idx == 1:
             if self.network.get_local_highscores().status_code == 200:
                 self._draw_personal_highscores()
             elif self.network.get_local_highscores().status_code != 0:
-                self._draw_failed_highscore_fetch("personal", "not logged in!")
+                status_code = self.network.get_local_highscores().status_code
+                second = (
+                    "server unavailable!"
+                    if status_code == UNAVAILABLE
+                    else "not logged in!"
+                )
+                self._draw_failed_highscore_fetch("personal", second)
 
         # notify user that there is another highscores page
         self._draw_centered_text("Click highscores page for", (190, 430))

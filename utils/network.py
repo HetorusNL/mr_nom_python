@@ -1,5 +1,14 @@
-import requests
+import sys
 import threading
+
+# in the browser build (pygbag/emscripten) there are no real threads, and the
+# backend only speaks plain http without CORS, which an https page can't reach
+IS_WEB = sys.platform == "emscripten"
+if not IS_WEB:
+    import requests
+
+# status code used when the backend can't be reached at all
+UNAVAILABLE = 503
 
 
 class Borg(object):
@@ -38,15 +47,24 @@ class Network(Borg):
     def __init__(self):
         Borg.__init__(self)
 
+    def _start_worker(self, target, args):
+        if IS_WEB:
+            # online features are unavailable in the browser, fail right away
+            response = Response()
+            response.status_code = UNAVAILABLE
+            self._cache[args[1]] = response
+            return
+        threading.Thread(target=target, args=args, daemon=True).start()
+
     def fetch_global_highscores(self):
         # clear response from cache
         self._cache["global_highscores"] = Response()
 
         # perform the global highscores get request
-        threading.Thread(
-            target=self._requests_get_worker,
-            args=(self._GLOBAL_HIGHSCORES_URL, "global_highscores"),
-        ).start()
+        self._start_worker(
+            self._requests_get_worker,
+            (self._GLOBAL_HIGHSCORES_URL, "global_highscores"),
+        )
         return {"result": True, "status": None}
 
     def get_global_highscores(self):
@@ -62,9 +80,7 @@ class Network(Borg):
 
         # perform the global highscores get request
         url = self._PERSONAL_HIGHSCORES_URL.format(self._cache["access_token"])
-        threading.Thread(
-            target=self._requests_get_worker, args=(url, "local_highscores")
-        ).start()
+        self._start_worker(self._requests_get_worker, (url, "local_highscores"))
         return {"result": True, "status": None}
 
     def get_local_highscores(self):
@@ -77,9 +93,7 @@ class Network(Borg):
         # perform the register post request
         url = self._REGISTER_URL
         params = {"username": username, "password": password, "email": email}
-        threading.Thread(
-            target=self._requests_post_worker, args=(url, "register", params)
-        ).start()
+        self._start_worker(self._requests_post_worker, (url, "register", params))
 
     def get_register_status(self):
         return self._cache["register"]
@@ -91,27 +105,39 @@ class Network(Borg):
         # perform the login post request
         url = self._LOGIN_URL
         params = {"username": username, "password": password}
-        threading.Thread(
-            target=self._requests_post_worker, args=(url, "login", params)
-        ).start()
+        self._start_worker(self._requests_post_worker, (url, "login", params))
 
     def get_login_result(self):
         return self._cache["login"]
 
     def _requests_get_worker(self, url, key):
         # fetch the response
-        result = requests.get(url)
+        try:
+            result = requests.get(url, timeout=10)
+        except requests.RequestException as e:
+            print(e)
+            response = Response()
+            response.status_code = UNAVAILABLE
+            self._cache[key] = response
+            return
         response = Response()
         response.status_code = result.status_code
         if response.status_code == 200:
             response.data = result.json()
 
-            # copy the response object into the _cache
-            self._cache[key] = response
+        # copy the response object into the _cache
+        self._cache[key] = response
 
     def _requests_post_worker(self, url, key, params):
         # perform the post request
-        result = requests.post(url, params)
+        try:
+            result = requests.post(url, params, timeout=10)
+        except requests.RequestException as e:
+            print(e)
+            response = Response()
+            response.status_code = UNAVAILABLE
+            self._cache[key] = response
+            return
         print(result)
         response = Response()
         response.status_code = result.status_code
