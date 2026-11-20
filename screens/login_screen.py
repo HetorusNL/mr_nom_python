@@ -47,7 +47,7 @@ class LoginScreen(Screen):
                 ]
                 self.logging_in = False
             elif status_code == UNAVAILABLE:
-                # backend unreachable (always the case in the browser build)
+                # backend unreachable
                 self.logging_in_status = ["Server unavailable!", "Try again later..."]
                 self.logging_in = False
             elif status_code != 0:

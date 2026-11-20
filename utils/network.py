@@ -1,11 +1,29 @@
+import asyncio
+import json
 import sys
 import threading
 
-# in the browser build (pygbag/emscripten) there are no real threads, and the
-# backend only speaks plain http without CORS, which an https page can't reach
+# in the browser build (pygbag/emscripten) there are no threads and no
+# requests library, the browser's fetch is used instead (see _web_worker)
 IS_WEB = sys.platform == "emscripten"
-if not IS_WEB:
+if IS_WEB:
+    import platform
+else:
     import requests
+
+# javascript helper for the browser build: performs the request and resolves
+# to a JSON string {status, body}, so only a plain string crosses to python
+_JS_FETCH_HELPER = """
+window.mrNomFetch = (url, method, body) => fetch(url, method === "POST" ? {
+    method: "POST",
+    body: body,
+    // the server parses the body as JSON regardless of the content type, and
+    // text/plain avoids a CORS preflight request (not handled by the proxy)
+    headers: {"Content-Type": "text/plain"},
+} : {})
+    .then(async (r) => JSON.stringify({status: r.status, body: await r.text()}))
+    .catch((e) => JSON.stringify({status: 503, body: String(e)}));
+"""
 
 # status code used when the backend can't be reached at all
 UNAVAILABLE = 503
@@ -36,7 +54,7 @@ class Network(Borg):
     }
 
     # url related constants
-    _BASE_URL = "http://hetorus.nl:1338"
+    _BASE_URL = "https://mr-nom-server-python.hetorus.nl"
     _GLOBAL_HIGHSCORES_URL = _BASE_URL + "/highscores/global"
     _PERSONAL_HIGHSCORES_URL = _BASE_URL + "/highscores/local?accessToken={}"
     _POST_HIGHSCORE_URL = _BASE_URL + "/highscores?accessToken={}"
@@ -49,12 +67,32 @@ class Network(Borg):
 
     def _start_worker(self, target, args):
         if IS_WEB:
-            # online features are unavailable in the browser, fail right away
-            response = Response()
-            response.status_code = UNAVAILABLE
-            self._cache[args[1]] = response
+            # args is (url, key) for GET and (url, key, params) for POST
+            asyncio.get_event_loop().create_task(self._web_worker(*args))
             return
         threading.Thread(target=target, args=args, daemon=True).start()
+
+    async def _web_worker(self, url, key, params=None):
+        if not getattr(platform.window, "mrNomFetch", None):
+            platform.window.eval(_JS_FETCH_HELPER)
+        method = "GET" if params is None else "POST"
+        body = "" if params is None else json.dumps(params)
+        response = Response()
+        try:
+            # platform.jsprom is broken in pygbag 0.9.3, so convert the
+            # promise to an iterator and await that (which jsprom would do)
+            promise = platform.window.mrNomFetch(url, method, body)
+            raw = await platform.jsiter(platform.window.iterator(promise))
+            result = json.loads(raw)
+            response.status_code = result["status"]
+            if response.status_code == 200:
+                response.data = json.loads(result["body"])
+        except Exception as e:
+            print("request failed:", e)
+            response.status_code = UNAVAILABLE
+
+        # copy the response object into the _cache
+        self._cache[key] = response
 
     def fetch_global_highscores(self):
         # clear response from cache
@@ -131,7 +169,7 @@ class Network(Borg):
     def _requests_post_worker(self, url, key, params):
         # perform the post request
         try:
-            result = requests.post(url, params, timeout=10)
+            result = requests.post(url, json=params, timeout=10)
         except requests.RequestException as e:
             print(e)
             response = Response()

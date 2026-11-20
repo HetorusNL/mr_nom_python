@@ -55,7 +55,7 @@ class RegisterScreen(Screen):
                 ]
                 self.registering = False
             elif status_code == UNAVAILABLE:
-                # backend unreachable (always the case in the browser build)
+                # backend unreachable
                 self.registering_status = ["Server unavailable!", "Try again later..."]
                 self.registering = False
             elif status_code != 0:
