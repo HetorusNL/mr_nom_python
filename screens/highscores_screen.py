@@ -12,6 +12,7 @@ class HighscoresScreen(Screen):
         self.screen_size = screen_size
         self.network = Network()
         self.font = font.Font(None, 30)
+        self.small_font = font.Font(None, 20)
 
         self.fetch_global_highscores = True
         self.fetch_personal_highscores = True
@@ -95,7 +96,8 @@ class HighscoresScreen(Screen):
         highscores_length = len(highscores) - 5 * self.global_highscores_page
         for i in range(5 if highscores_length > 5 else highscores_length):
             highscore = highscores[i + 5 * self.global_highscores_page]
-            self._draw_left_align_text(highscore["user"], (10, 110 + i * 45))
+            self._draw_left_align_text(highscore["user"], (10, 102 + i * 45))
+            self._draw_source(highscore, (10, 122 + i * 45))
             self._draw_numbers(highscore["score"], (150, 100 + i * 45))
             self._draw_numbers(highscore["time"] // 1000, (240, 100 + i * 45))
 
@@ -115,6 +117,7 @@ class HighscoresScreen(Screen):
             highscore = highscores[i + 5 * self.personal_highscores_page]
             self._draw_numbers(highscore["score"], (10, 100 + i * 45))
             self._draw_numbers(highscore["time"] // 1000, (160, 100 + i * 45))
+            self._draw_source(highscore, (270, 110 + i * 45))
 
         # draw pagination stuff
         self._draw_pagination(len(highscores), self.personal_highscores_page)
@@ -140,6 +143,12 @@ class HighscoresScreen(Screen):
         text_rect = text.get_rect()
         text_rect.center = center_coord
         self.pg_screen.blit(text, text_rect)
+
+    def _draw_source(self, highscore, top_left):
+        # where the highscore was played: the Android "app" or the "web"
+        source = highscore.get("source", "app")
+        text = self.small_font.render(source, True, (150, 150, 150))
+        self.pg_screen.blit(text, top_left)
 
     def _draw_left_align_text(self, text, top_left, color=(0, 0, 0)):
         text = self.font.render(text, True, color)

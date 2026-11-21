@@ -30,6 +30,8 @@ class GameScreen(Screen):
         self.score = 0
         self.game_over = False
         self.game_time = 0
+        self.play_time = 0  # total time played (seconds), for the highscore
+        self.highscore_submitted = None  # None: not yet, else True/False
         self.game_tick = 0.5
         self.game_tick_decrement = 0.05
         self.direction = 0  # [0,1,2,3] == [up,left,down,right]
@@ -66,6 +68,7 @@ class GameScreen(Screen):
 
         # calculate game loop updates
         self.game_time += delta_time
+        self.play_time += delta_time
         results = {}
 
         while self.game_time >= self.game_tick:
@@ -109,7 +112,18 @@ class GameScreen(Screen):
                 else:
                     self.game_over = True
 
+        if self.game_over:
+            self._submit_highscore()
+
         return results
+
+    def _submit_highscore(self):
+        # submit the highscore once per game, only possible when logged in
+        if self.highscore_submitted is None:
+            time_ms = int(self.play_time * 1000)
+            self.highscore_submitted = self.network.post_highscore(
+                self.score, time_ms
+            )
 
     def draw(self):
         Screen.draw(self)
@@ -134,6 +148,7 @@ class GameScreen(Screen):
         if self.game_over:
             self.pg_screen.blit(self.gameover, (47, 100))
             self.pg_screen.blit(self.buttons, (128, 208), (0, 128, 64, 64))
+            self._draw_centered_text(self._highscore_status(), (160, 300))
             return
 
         if self.pause:
@@ -142,6 +157,18 @@ class GameScreen(Screen):
             self.pg_screen.blit(self.buttons, (0, 0), (64, 128, 64, 64))
             self.pg_screen.blit(self.buttons, (0, 415), (64, 64, 64, 64))
             self.pg_screen.blit(self.buttons, (256, 415), (0, 64, 64, 64))
+
+    def _highscore_status(self):
+        if not self.highscore_submitted:
+            return "Not logged in, not submitted"
+        status_code = self.network.get_post_highscore_result().status_code
+        if status_code == 0:
+            return "Submitting highscore..."
+        if status_code == 200:
+            return "Highscore submitted!"
+        if status_code == 401:
+            return "Login expired, not submitted"
+        return f"Submitting failed ({status_code})"
 
     def draw_score(self):
         score_length = len(str(self.score))
@@ -228,5 +255,7 @@ class GameScreen(Screen):
         self.snake = [(5, 5), (5, 6), (5, 7)]
         self.score = 0
         self.game_time = 0
+        self.play_time = 0
+        self.highscore_submitted = None
         self.game_tick = 0.5
         self.stain_pos = self._generate_stain_pos()

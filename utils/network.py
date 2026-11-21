@@ -49,6 +49,7 @@ class Network(Borg):
         "local_highscores": Response(),
         "login": Response(),
         "register": Response(),
+        "post_highscore": Response(),
         "access_token": None,
         "username": None,
     }
@@ -147,6 +148,24 @@ class Network(Borg):
 
     def get_login_result(self):
         return self._cache["login"]
+
+    def post_highscore(self, score, time_ms):
+        if not self._cache["access_token"]:
+            return False
+
+        # clear response from cache
+        self._cache["post_highscore"] = Response()
+
+        # perform the post highscore request
+        url = self._POST_HIGHSCORE_URL.format(self._cache["access_token"])
+        params = {"score": score, "time": time_ms}
+        self._start_worker(
+            self._requests_post_worker, (url, "post_highscore", params)
+        )
+        return True
+
+    def get_post_highscore_result(self):
+        return self._cache["post_highscore"]
 
     def _requests_get_worker(self, url, key):
         # fetch the response
